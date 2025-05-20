@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_trackerapp/models/user/user_register_dto.dart';
-import 'package:habit_trackerapp/services/auth_service.dart';
+import 'package:habit_trackerapp/services/api_service.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -14,7 +14,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String _selectedRole = 'User';
-  final _authService = AuthService();
+  final _authService = ApiService();
   bool _loading = false;
   String? _error;
 

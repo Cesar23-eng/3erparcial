@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:habit_trackerapp/models/user/user_login_dto.dart';
-import 'package:habit_trackerapp/services/auth_service.dart';
 import 'package:habit_trackerapp/screens/user_home_screen.dart';
 import 'package:habit_trackerapp/screens/coach_home_screen.dart';
 import 'package:habit_trackerapp/screens/unknown_role_screen.dart';
+import 'package:habit_trackerapp/services/api_service.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
+  final _authService = ApiService();
   bool _loading = false;
   String? _error;
 

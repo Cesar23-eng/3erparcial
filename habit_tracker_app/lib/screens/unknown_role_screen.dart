@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:habit_trackerapp/services/auth_service.dart';
 import 'package:habit_trackerapp/screens/login_screen.dart';
+import 'package:habit_trackerapp/services/api_service.dart';
 
 class UnknownRoleScreen extends StatelessWidget {
   const UnknownRoleScreen({super.key});
 
   void _logout(BuildContext context) async {
-    await AuthService().logout();
+    await ApiService().logout();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
