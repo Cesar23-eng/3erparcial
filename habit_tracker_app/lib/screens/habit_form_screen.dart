@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:habit_trackerapp/models/habit/habit_create_dto.dart';
-import 'package:habit_trackerapp/services/api_service.dart';
+import '../models/habit/habit_create_dto.dart';
+import '../services/api_service.dart';
 
 class HabitFormScreen extends StatefulWidget {
   const HabitFormScreen({super.key});
@@ -10,23 +10,28 @@ class HabitFormScreen extends StatefulWidget {
 }
 
 class _HabitFormScreenState extends State<HabitFormScreen> {
-  final _nameController = TextEditingController();
-  bool _loading = false;
-  String? _mensaje;
+  final nameController = TextEditingController();
+  final descController = TextEditingController();
+  final freqController = TextEditingController();
 
-  Future<void> _guardar() async {
-    setState(() {
-      _loading = true;
-      _mensaje = null;
-    });
+  Future<void> _submit() async {
+    final dto = HabitCreateDto(
+      name: nameController.text,
+      description: descController.text,
+      frequency: freqController.text,
+    );
 
-    final dto = HabitCreateDto(name: _nameController.text.trim());
-    final res = await ApiService().post('habits', dto.toJson());
-
-    setState(() {
-      _loading = false;
-      _mensaje = res?.statusCode == 200 ? "Guardado correctamente" : "Error al guardar";
-    });
+    final success = await ApiService().createHabit(dto);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Hábito creado')),
+      );
+      Navigator.pop(context); // o limpiar campos
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('❌ Error al crear el hábito')),
+      );
+    }
   }
 
   @override
@@ -37,19 +42,11 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: "Nombre del hábito"),
-            ),
-            const SizedBox(height: 16),
-            if (_mensaje != null)
-              Text(_mensaje!, style: const TextStyle(color: Colors.red)),
-            ElevatedButton(
-              onPressed: _loading ? null : _guardar,
-              child: _loading
-                  ? const CircularProgressIndicator()
-                  : const Text("Guardar"),
-            )
+            TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nombre")),
+            TextField(controller: descController, decoration: const InputDecoration(labelText: "Descripción")),
+            TextField(controller: freqController, decoration: const InputDecoration(labelText: "Frecuencia (ej. Diario)")),
+            const SizedBox(height: 20),
+            ElevatedButton(onPressed: _submit, child: const Text("Guardar")),
           ],
         ),
       ),

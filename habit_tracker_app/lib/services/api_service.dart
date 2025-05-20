@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user/user_info_dto.dart';
 import '../models/user/user_login_dto.dart';
 import '../models/user/user_register_dto.dart';
+import '../models/habit/habit_create_dto.dart';
+import '../models/habit/habit_dto.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -15,10 +17,10 @@ class ApiService {
   final String _baseUrl = "https://app-250520095308.azurewebsites.net/api";
   UserInfoDto? _currentUser;
 
-  // Getter del usuario actual en memoria
+  // Getter del usuario actual
   UserInfoDto? get currentUser => _currentUser;
 
-  // Token y headers
+  // Obtener token desde memoria o SharedPreferences
   Future<String?> _getToken() async {
     if (_currentUser != null) return _currentUser!.token;
 
@@ -41,7 +43,7 @@ class ApiService {
     return headers;
   }
 
-  // Auth: login
+  // LOGIN
   Future<UserInfoDto?> login(UserLoginDto dto) async {
     try {
       final res = await http.post(
@@ -69,7 +71,7 @@ class ApiService {
     }
   }
 
-  // Auth: register
+  // REGISTER
   Future<bool> register(UserRegisterDto dto) async {
     try {
       final res = await http.post(
@@ -80,10 +82,7 @@ class ApiService {
 
       if (res.statusCode == 200) return true;
 
-      if (res.body.isNotEmpty) {
-        print("❌ Registro fallido: ${res.body}");
-      }
-
+      print("❌ Registro fallido: ${res.body}");
       return false;
     } catch (e) {
       print("❌ Error register: $e");
@@ -91,20 +90,28 @@ class ApiService {
     }
   }
 
-  // Auth: logout
+  // LOGOUT
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user');
     _currentUser = null;
   }
 
-  // GET con token
+  // Cargar usuario guardado
+  Future<UserInfoDto?> cargarUsuario() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('user');
+    if (json == null) return null;
+    _currentUser = UserInfoDto.fromJson(jsonDecode(json));
+    return _currentUser;
+  }
+
+  // MÉTODOS GENERALES
   Future<http.Response?> get(String endpoint) async {
     final headers = await _getHeaders();
     return http.get(Uri.parse("$_baseUrl/$endpoint"), headers: headers);
   }
 
-  // POST con token
   Future<http.Response?> post(String endpoint, Map<String, dynamic> data) async {
     final headers = await _getHeaders();
     return http.post(
@@ -114,7 +121,6 @@ class ApiService {
     );
   }
 
-  // PUT con token
   Future<http.Response?> put(String endpoint, Map<String, dynamic> data) async {
     final headers = await _getHeaders();
     return http.put(
@@ -124,12 +130,26 @@ class ApiService {
     );
   }
 
-  // DELETE con token
   Future<http.Response?> delete(String endpoint) async {
     final headers = await _getHeaders();
     return http.delete(
       Uri.parse("$_baseUrl/$endpoint"),
       headers: headers,
     );
+  }
+
+  // 🔧 HÁBITOS: crear hábito
+  Future<bool> createHabit(HabitCreateDto dto) async {
+    final res = await post("habits", dto.toJson());
+    return res?.statusCode == 200;
+  }
+
+  // 🔧 HÁBITOS: obtener lista de hábitos
+  Future<List<HabitDto>> getHabits() async {
+    final res = await get("habits");
+    if (res == null || res.statusCode != 200) return [];
+
+    final list = jsonDecode(res.body) as List;
+    return list.map((e) => HabitDto.fromJson(e)).toList();
   }
 }
